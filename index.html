@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thai Tech Vacancy Digest</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap');
+
+:root {
+  --bg:#0D1117; --surface:#161B22; --card:#1C2230; --border:#30363D;
+  --accent:#00D4AA; --accent2:#FF6B35; --muted:#8B949E; --text:#E6EDF3;
+  --dim:#C9D1D9; --green:#3FB950; --yellow:#D29922; --red:#F85149; --blue:#58A6FF;
+  --purple:#BC73FF;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:14px;min-height:100vh;display:flex;flex-direction:column}
+
+/* HEADER */
+header{border-bottom:1px solid var(--border);padding:18px 28px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.header-left{display:flex;align-items:center;gap:12px}
+.pulse-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent);flex-shrink:0;animation:glow 2s ease-in-out infinite}
+@keyframes glow{0%,100%{box-shadow:0 0 4px var(--accent)}50%{box-shadow:0 0 16px var(--accent)}}
+h1{font-size:17px;font-weight:700;letter-spacing:-.3px}
+h1 span{color:var(--accent)}
+.tagline{font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-top:2px}
+.header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#last-updated{font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace}
+.btn{display:flex;align-items:center;gap:7px;border:none;border-radius:6px;padding:8px 15px;font-size:12px;font-weight:600;cursor:pointer;transition:opacity .15s,transform .1s;font-family:'IBM Plex Sans',sans-serif}
+.btn-primary{background:var(--accent);color:#000}
+.btn-primary:hover{opacity:.85}
+.btn-primary:active{transform:scale(.97)}
+.btn-primary:disabled{opacity:.35;cursor:not-allowed}
+.spin{display:inline-block;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* STATUS */
+#status-bar{padding:9px 28px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;min-height:34px}
+.sdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.s-idle{background:var(--muted)}.s-run{background:var(--accent);animation:pulse 1s ease-in-out infinite}.s-ok{background:var(--green)}.s-err{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* KPI BAR */
+#kpi-bar{display:flex;gap:1px;background:var(--border);border-bottom:1px solid var(--border);overflow-x:auto}
+.kpi{flex:1;min-width:110px;background:var(--surface);padding:13px 16px}
+.kpi-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-family:'IBM Plex Mono',monospace}
+.kpi-value{font-size:24px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--accent);line-height:1.2;margin-top:3px}
+.kpi-value.sm{font-size:15px;padding-top:5px}
+.kpi-sub{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* MAIN */
+.main{display:flex;flex:1;min-height:0}
+#table-panel{flex:1;overflow:auto;border-right:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:var(--surface);color:var(--muted);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;font-family:'IBM Plex Mono',monospace;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:2;white-space:nowrap;cursor:pointer;user-select:none}
+thead th:hover{color:var(--text)}
+thead th.sorted{color:var(--accent)}
+tbody tr{border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+tbody tr:hover{background:rgba(0,212,170,.05)}
+tbody tr.selected{background:rgba(0,212,170,.09)!important}
+td{padding:10px 12px;vertical-align:middle}
+.co-name{font-weight:600;color:var(--text);white-space:nowrap}
+.co-sub{font-size:10px;color:var(--muted);font-weight:400;margin-top:1px}
+.badge{display:inline-block;padding:2px 9px;border-radius:4px;font-size:12px;font-family:'IBM Plex Mono',monospace;font-weight:700}
+.b-total{background:rgba(0,212,170,.15);color:var(--accent)}
+.b-nr{background:rgba(139,148,158,.1);color:var(--muted);font-style:italic}
+.pills{display:flex;flex-wrap:wrap;gap:3px}
+.pill{padding:1px 6px;border-radius:3px;font-size:10px;font-family:'IBM Plex Mono',monospace;font-weight:600}
+.p-swe{background:rgba(88,166,255,.15);color:var(--blue)}
+.p-data{background:rgba(63,185,80,.15);color:var(--green)}
+.p-cloud{background:rgba(210,153,34,.15);color:var(--yellow)}
+.p-sec{background:rgba(248,81,73,.15);color:var(--red)}
+.p-prod{background:rgba(188,115,255,.15);color:var(--purple)}
+.mono{font-family:'IBM Plex Mono',monospace}
+.trend{font-size:11px;font-family:'IBM Plex Mono',monospace}
+.t-up{color:var(--green)}.t-down{color:var(--red)}.t-stable{color:var(--muted)}.t-new{color:var(--yellow)}
+.bar-bg{height:3px;border-radius:2px;background:rgba(255,255,255,.07);margin-top:5px;overflow:hidden}
+.bar-fill{height:100%;background:var(--accent);border-radius:2px}
+
+/* SOURCE badge */
+.src-link{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--border);transition:color .1s}
+.src-link:hover{color:var(--accent)}
+
+/* DETAIL PANEL */
+#detail-panel{width:320px;flex-shrink:0;padding:22px 18px;overflow-y:auto;background:var(--surface);border-left:1px solid var(--border)}
+.dp-title{font-size:15px;font-weight:700;margin-bottom:3px}
+.dp-sub{font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-bottom:14px}
+.dp-section{margin-bottom:14px}
+.dp-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-family:'IBM Plex Mono',monospace;margin-bottom:6px;display:block}
+.dp-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px}
+.dp-row:last-child{border:none}
+.dp-row .val{font-family:'IBM Plex Mono',monospace;color:var(--accent);font-weight:700}
+.dp-total{border-top:1px solid rgba(0,212,170,.3)!important;margin-top:4px;padding-top:8px!important}
+.dp-total .val{font-size:18px}
+.dp-note{font-size:12px;color:var(--dim);line-height:1.6;background:var(--card);border-radius:6px;padding:11px;border-left:3px solid var(--accent)}
+.dp-source{margin-top:10px}
+.dp-source-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-family:'IBM Plex Mono',monospace;margin-bottom:6px;display:block}
+.dp-source-url{display:block;font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--blue);text-decoration:none;word-break:break-all;line-height:1.5;margin-bottom:3px}
+.dp-source-url:hover{color:var(--accent)}
+.dp-empty{color:var(--muted);font-size:13px;text-align:center;margin-top:50px;line-height:2}
+
+/* STREAM */
+#stream-panel{border-top:1px solid var(--border);background:var(--surface);max-height:200px;overflow-y:auto}
+#stream-header{display:flex;align-items:center;justify-content:space-between;padding:10px 28px 0}
+#stream-header h4{font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.8px}
+#stream-output{padding:8px 28px 12px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim);line-height:1.7;white-space:pre-wrap}
+.s-co{color:var(--accent);font-weight:600}.s-num{color:var(--yellow)}.s-err{color:var(--red)}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* RESPONSIVE */
+@media(max-width:750px){#detail-panel{display:none}.main{flex-direction:column}header{padding:12px 16px}#kpi-bar .kpi{min-width:90px}td{padding:8px 10px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="pulse-dot"></div>
+    <div>
+      <h1>Thai Tech <span>Vacancy</span> Digest</h1>
+      <div class="tagline">12 companies · Bangkok · real-time via Claude + web search</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <span id="last-updated">loaded from last research run</span>
+    <button class="btn btn-primary" id="btn-refresh" onclick="runDigest()">
+      <span id="ri">⟳</span> Live Refresh
+    </button>
+  </div>
+</header>
+
+<div id="status-bar">
+  <div class="sdot s-ok" id="sdot"></div>
+  <span id="stext">Showing data from research run 12 Jun 2026. Click Live Refresh for a fresh Claude+web-search fetch.</span>
+</div>
+
+<div id="kpi-bar">
+  <div class="kpi"><div class="kpi-label">Total Vacancies</div><div class="kpi-value" id="kpi-total">369+</div><div class="kpi-sub">across 12 companies</div></div>
+  <div class="kpi"><div class="kpi-label">Companies Active</div><div class="kpi-value" id="kpi-cos">12</div><div class="kpi-sub">tracked today</div></div>
+  <div class="kpi"><div class="kpi-label">Top Category</div><div class="kpi-value sm" id="kpi-cat">Software Eng</div><div class="kpi-sub">most in-demand</div></div>
+  <div class="kpi"><div class="kpi-label">Hottest Employer</div><div class="kpi-value sm" id="kpi-hot">Agoda</div><div class="kpi-sub">by open roles</div></div>
+  <div class="kpi"><div class="kpi-label">As Of</div><div class="kpi-value sm" id="kpi-ts">12 Jun 2026</div><div class="kpi-sub">Bangkok</div></div>
+</div>
+
+<div class="main">
+  <div id="table-panel">
+    <table id="vtable">
+      <thead>
+        <tr>
+          <th onclick="sortBy(0)">Company</th>
+          <th onclick="sortBy(1)" class="sorted">Vacancies ↓</th>
+          <th>Category Pills</th>
+          <th onclick="sortBy(3)">SWE</th>
+          <th onclick="sortBy(4)">Data/AI</th>
+          <th onclick="sortBy(5)">Cloud</th>
+          <th onclick="sortBy(6)">Sec</th>
+          <th>Trend</th>
+          <th>Source</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <div id="detail-panel">
+    <div class="dp-empty">← Click a row<br>to see breakdown<br>& source links</div>
+  </div>
+</div>
+
+<div id="stream-panel">
+  <div id="stream-header">
+    <h4>▸ Live Data Feed</h4>
+  </div>
+  <div id="stream-output">Data pre-loaded from 12 Jun 2026 research. Click Live Refresh to stream fresh results here.</div>
+</div>
+
+<script>
+// ── Seed data from real research (12 Jun 2026) ────────────────────────────────
+const SEED = [
+  {
+    id:"agoda", name:"Agoda", sub:"Booking Holdings · Bangkok HQ",
+    total:219, swe:80, data_ai:30, cloud:30, security:5, product:15, other:59,
+    trend:"up",
+    note:"Largest Bangkok tech employer by far. 219 total open positions confirmed on Glassdoor Jun 2026. Heavy relocation-package hiring for Lead/Staff/Principal SWE (Back-End, iOS, Android), SRE Infra, Eng Manager, and notably a new Principal SWE – AI-powered Data Querying role signalling LLM product investment.",
+    sources:[
+      {label:"Glassdoor – 219 open positions", url:"https://www.glassdoor.com/Jobs/Agoda-Bangkok-Jobs-EI_IE461386.0,5_IL.6,13_IC3179725.htm"},
+      {label:"Agoda Engineering Careers", url:"https://careersatagoda.com/department/technology/"},
+      {label:"startup.jobs Bangkok listings", url:"https://startup.jobs/locations/thailand/software-engineer"}
+    ]
+  },
+  {
+    id:"lmwn", name:"LINE MAN Wongnai", sub:"Thailand on-demand unicorn",
+    total:25, swe:12, data_ai:5, cloud:3, security:1, product:3, other:1,
+    trend:"stable",
+    note:"Active hiring on careers.lmwn.com. Open roles: SWE Backend (Java/Go), Senior Data Engineer, Senior Data Platform Engineer, SRE, Android Engineer, Staff SWE (Search). Summer 2026 Junior internship also open. Notably the company postponed its planned SET IPO in Dec 2025 citing unfavourable market conditions, yet engineering hiring continues.",
+    sources:[
+      {label:"careers.lmwn.com – Engineering team", url:"https://careers.lmwn.com/development"},
+      {label:"careers.lmwn.com – Data & Analytics", url:"https://careers.lmwn.com/data-and-analytics/551-data-engineer"},
+      {label:"Built In – LMWN jobs listing", url:"https://builtin.com/company/line-man-wongnai/jobs"}
+    ]
+  },
+  {
+    id:"ais", name:"AIS", sub:"Advanced Info Service",
+    total:22, swe:8, data_ai:3, cloud:3, security:1, product:2, other:5,
+    trend:"up",
+    note:"Telecom-tech convergence driving demand. Open roles include WiFi Network Engineer, System Engineer & Cloud (IT Ops), IoT/M2M Platform Engineer, Fraud Data Analyst, Virtual Bank Software team (BTS Ari). ~57 total AIS-labelled listings on JobsDB Thailand of which ~22 are clearly tech.",
+    sources:[
+      {label:"JobsDB – AIS Bangkok tech jobs", url:"https://th.jobsdb.com/Advanced-Info-Service-jobs"},
+      {label:"JobsDB – AIS Vadhana tech listings", url:"https://th.jobsdb.com/advanced-info-service-public-company-limited-ais-jobs/in-Vadhana-Bangkok"}
+    ]
+  },
+  {
+    id:"kbtg", name:"KBTG", sub:"Kasikorn Business-Technology Group",
+    total:20, swe:10, data_ai:3, cloud:3, security:2, product:1, other:1,
+    trend:"up",
+    note:"KBTG careers page (kbtg.tech/en/career) is JavaScript-rendered and returns no static listing. Vacancy count inferred from JobsDB snippets and LinkedIn posts showing: AI/ML Engineer, BA Team Lead, Data QA, Solution Designer, Head of Delivery Manager, and more. LinkedIn shows 50 worldwide positions. Active across KSoft, KInfra, KBTGSec, and KBTG Labs sub-entities.",
+    sources:[
+      {label:"kbtg.tech/en/career (JS-rendered)", url:"https://www.kbtg.tech/en/career"},
+      {label:"JobsDB – KBTG Bangkok listings", url:"https://th.jobsdb.com/KASIKORN-Business+Technology-Group-jobs/in-Bangkok-Metropolitan-Region"},
+      {label:"LinkedIn – 50 KBTG jobs worldwide", url:"https://www.linkedin.com/jobs/kasikorn-business-technology-group-%5Bkbtg%5D-jobs-worldwide"}
+    ]
+  },
+  {
+    id:"true", name:"True / True Digital Group", sub:"Telecom-tech convergence",
+    total:18, swe:6, data_ai:2, cloud:2, security:1, product:2, other:5,
+    trend:"up",
+    note:"Post-DTAC merger (2023) integration is driving cloud and digital roles. True Digital Group encompasses IoT, Data Analytics, Digital Health, Cybersecurity. Main careers page is JS-rendered. Data sourced from LinkedIn and JobsDB snippets showing software, cloud, IoT, and fintech roles.",
+    sources:[
+      {label:"True Digital Group LinkedIn jobs", url:"https://www.linkedin.com/company/true-digital-group/jobs"},
+      {label:"True Corporation LinkedIn jobs", url:"https://www.linkedin.com/company/true-corporation/jobs"}
+    ]
+  },
+  {
+    id:"pttdigital", name:"PTT Digital Solutions", sub:"Energy-sector IT arm",
+    total:16, swe:7, data_ai:1, cloud:1, security:1, product:1, other:5,
+    trend:"stable",
+    note:"SAP, RPA, and application development dominate. Open roles include SW Developer (NodeJS/C#/.Net), System Analyst, RPA Developer, SAP S/4HANA Consultant (FI/CO/SD/MM), App Platform Engineer (web & mobile), IT Asset Management Team Lead, PMO Officer. Notable: a Cybersecurity Director-level search — unusual for an energy-sector IT arm.",
+    sources:[
+      {label:"JobsDB – PTT Digital jobs Thailand", url:"https://th.jobsdb.com/PTT-Digital-jobs"},
+      {label:"JobsDB – PTT Digital Bangkok", url:"https://th.jobsdb.com/PTT-Digital-jobs/in-Bangkok-Metropolitan-Region"},
+      {label:"JobsDB – PTT Group Bangkok (all entities)", url:"https://th.jobsdb.com/PTT-Group-jobs"}
+    ]
+  },
+  {
+    id:"scbtechx", name:"SCB TechX", sub:"SCB digital technology entity",
+    total:12, swe:4, data_ai:1, cloud:2, security:1, product:1, other:3,
+    trend:"stable",
+    note:"Direct fetch from scbtechx.io/careers-home returned a confirmed list of 12 positions: Data Governance, Project Manager, Tech QA Manager (x2), SRE Engineer, System Analyst, Software QA Manager, Senior Cloud Infrastructure PM, Solution Architect (x3), Penetration Tester. Penetration Tester + Data Governance combination signals a security-forward posture for a core banking integrator.",
+    sources:[
+      {label:"SCB TechX Careers (direct fetch)", url:"https://scbtechx.io/careers-home/"},
+      {label:"SCB TechX Breezy HR job board", url:"https://scb-techx-co-ltd.breezy.hr/"},
+      {label:"JobsDB – SCB Tech X listings", url:"https://th.jobsdb.com/SCB-Tech-X-Co.,-Ltd.-jobs"}
+    ]
+  },
+  {
+    id:"ascend", name:"Ascend Group / TrueMoney", sub:"Fintech arm of True Group",
+    total:12, swe:5, data_ai:2, cloud:2, security:0, product:2, other:1,
+    trend:"up",
+    note:"Cloud-native engineering and ML/DS roles dominate. Open roles: Software Engineer (cloud-native), Data Scientist/ML Engineer (TrueMoney), Data Service Engineer, System Analyst, Cloud Environment Engineer (AWS/GCP), Product Owner KYC, Cross-Border Transfer Product Manager. KYC and cross-border payments focus reflects regulatory expansion.",
+    sources:[
+      {label:"JobsDB – Ascend Group Thailand jobs", url:"https://th.jobsdb.com/Ascend-Group-jobs"},
+      {label:"ascendcorp.com job openings", url:"https://www.ascendcorp.com/job_opening/data-service-engineer-true-money-ascend-money/"},
+      {label:"Glassdoor – Ascend data scientist Bangkok", url:"https://www.glassdoor.com/Job/bangkok-data-scientist-jobs-SRCH_IL.0,7_IC3179725_KO8,22.htm"}
+    ]
+  },
+  {
+    id:"tripetch", name:"Tri Petch IT Solutions", sub:"Automotive IT — Isuzu/Mitsubishi",
+    total:8, swe:4, data_ai:0, cloud:2, security:0, product:1, other:1,
+    trend:"stable",
+    note:"Automotive IT niche provider (in-house for Tri Petch Isuzu group). Open roles include Presales IT Engineer (enterprise clients), Software Developer (Full-Stack/Mobile), Cloud/Network System Administrator, Business Analyst. Career page at tripetchgroup.com/en/tripetchitsolutions is informational only; vacancies sourced from JobsDB.",
+    sources:[
+      {label:"JobsDB – Tri Petch IT Solutions", url:"https://th.jobsdb.com/Tri-Petch-IT-Solutions-jobs"},
+      {label:"Tri Petch IT Solutions company page", url:"https://www.tripetchgroup.com/en/tripetchitsolutions"},
+      {label:"Tri Petch IT Solutions LinkedIn", url:"https://www.linkedin.com/company/tri-petch-it-solutions-co-ltd"}
+    ]
+  },
+  {
+    id:"bitkub", name:"Bitkub", sub:"Thailand's leading crypto exchange",
+    total:7, swe:3, data_ai:1, cloud:0, security:0, product:1, other:2,
+    trend:"down",
+    note:"Smaller roster vs prior years, with some roles on 6-month contracts — a cautious expansion signal. Confirmed roles (via JobsDB + public Facebook post Jan 2026): Software Engineer (Jr–Team Lead), AI/ML Engineer (6-month contract), Senior QA Engineer, Project Manager, BA Manager, Senior Product Owner, Senior BA Associate (contract). careers.bitkub.com job page is JS-rendered with no static count.",
+    sources:[
+      {label:"JobsDB – Bitkub Online jobs", url:"https://th.jobsdb.com/Bitkub-Online-jobs"},
+      {label:"careers.bitkub.com (JS-rendered)", url:"https://careers.bitkub.com/jobs"},
+      {label:"LinkedIn – Bitkub 6-7 jobs worldwide", url:"https://www.linkedin.com/jobs/bitkub-jobs-worldwide"}
+    ]
+  },
+  {
+    id:"krungsri", name:"Krungsri Nimble", sub:"Bank of Ayudhya tech arm",
+    total:7, swe:3, data_ai:0, cloud:2, security:0, product:0, other:2,
+    trend:"up",
+    note:"Active hiring confirmed post Krungsri Tech Day 2025. Notable open role: Cloud/DevOps Engineer (AWS/OpenShift/Terraform/Ansible/Helm) posted ~1 month ago on BeBee. Also: Software Engineer (technical planning & coding), Architect roles spanning Payments, Business Systems, Open Infra, and AI/ML domains. Innovation-driven culture with QA Academy talent-building programme.",
+    sources:[
+      {label:"BeBee – Krungsri Nimble Cloud/DevOps Engineer", url:"https://bebee.com/th/jobs/cloud-engineer-devops-engineer-krungsri-nimble-bank-of-ayudhya-public-company-limited-yan-nawa-bangk--theirstack-681985113"},
+      {label:"JobsDB – Krungsri Nimble full-time Bangkok", url:"https://th.jobsdb.com/Krungsri-Nimble-jobs/in-Bangkok/full-time"},
+      {label:"krungsrinimble.com (careers)", url:"https://www.krungsrinimble.com/"}
+    ]
+  },
+  {
+    id:"toyota", name:"Toyota Thailand", sub:"Digital transformation arm (ASEAN)",
+    total:5, swe:3, data_ai:0, cloud:1, security:0, product:0, other:1,
+    trend:"stable",
+    note:"Limited dedicated IT postings under the Toyota Thailand brand. Confirmed: Software Engineer for Toyota Digital Transformation (ASEAN-wide, listed 1 day ago on JobsDB), and Software Engineer for Automotive at Toyota Tsusho Nexty Electronics Thailand (Chidlom, hybrid). Digital transformation push is real but hiring volumes remain small vs pure-tech firms.",
+    sources:[
+      {label:"JobsDB – Toyota Thailand ICT jobs (Jun 2026)", url:"https://th.jobsdb.com/jobs-in-information-communication-technology"},
+      {label:"JobsDB – Toyota Bangkok jobs", url:"https://th.jobsdb.com/Toyota-jobs/in-Bangkok"},
+      {label:"Jobstreet – Toyota Tsusho Nexty SW Engineer", url:"https://ph.jobstreet.com/software-jobs/in-Thailand"}
+    ]
+  }
+];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let DATA = [...SEED];
+let sortCol = 1, sortAsc = false;
+let selRow = null, selData = null;
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function render() {
+  const max = Math.max(...DATA.map(d => d.total||0), 1);
+  const sorted = [...DATA].sort((a,b) => {
+    const keys = [null,'total',null,'swe','data_ai','cloud','security'];
+    const k = keys[sortCol];
+    if (sortCol===0) return sortAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
+    const va = k ? (a[k]||0) : 0, vb = k ? (b[k]||0) : 0;
+    return sortAsc ? va-vb : vb-va;
+  });
+
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+  sorted.forEach(d => {
+    const tr = document.createElement('tr');
+    if (selData && selData.id===d.id) tr.classList.add('selected');
+    const pct = Math.round(((d.total||0)/max)*100);
+    const trendHtml = {up:'<span class="trend t-up">↑ growing</span>',down:'<span class="trend t-down">↓ slower</span>',stable:'<span class="trend t-stable">→ stable</span>',new:'<span class="trend t-new">✦ new</span>'}[d.trend]||'—';
+    const srcLabel = d.sources?.[0]?.label || '';
+    const srcUrl   = d.sources?.[0]?.url || '#';
+    tr.innerHTML = `
+      <td>
+        <div class="co-name">${d.name}</div>
+        <div class="co-sub">${d.sub}</div>
+        <div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div>
+      </td>
+      <td><span class="badge ${d.total?'b-total':'b-nr'}">${d.total!=null?'~'+d.total:'N/R'}</span></td>
+      <td>
+        <div class="pills">
+          ${d.swe?`<span class="pill p-swe">SWE ${d.swe}</span>`:''}
+          ${d.data_ai?`<span class="pill p-data">Data ${d.data_ai}</span>`:''}
+          ${d.cloud?`<span class="pill p-cloud">Cloud ${d.cloud}</span>`:''}
+          ${d.security?`<span class="pill p-sec">Sec ${d.security}</span>`:''}
+          ${d.product?`<span class="pill p-prod">Prod ${d.product}</span>`:''}
+        </div>
+      </td>
+      <td class="mono" style="color:var(--blue)">${d.swe||'—'}</td>
+      <td class="mono" style="color:var(--green)">${d.data_ai||'—'}</td>
+      <td class="mono" style="color:var(--yellow)">${d.cloud||'—'}</td>
+      <td class="mono" style="color:var(--red)">${d.security||'—'}</td>
+      <td>${trendHtml}</td>
+      <td><a class="src-link" href="${srcUrl}" target="_blank" title="${srcLabel}">${(srcLabel.split('–')[0]||srcLabel).trim().slice(0,18)}…</a></td>
+    `;
+    tr.addEventListener('click', () => showDetail(d, tr));
+    tbody.appendChild(tr);
+  });
+  updateKPIs();
+}
+
+function updateKPIs() {
+  const tot = DATA.reduce((s,d)=>s+(d.total||0),0);
+  const topCat = ['swe','data_ai','cloud','security','product']
+    .map(k=>({k,v:DATA.reduce((s,d)=>s+(d[k]||0),0)})).sort((a,b)=>b.v-a.v)[0];
+  const catLabel = {swe:'Software Eng',data_ai:'Data / AI',cloud:'Cloud/Infra',security:'Security',product:'Product'}[topCat?.k]||'—';
+  const hot = [...DATA].sort((a,b)=>b.total-a.total)[0];
+  document.getElementById('kpi-total').textContent = tot+'+';
+  document.getElementById('kpi-cat').textContent = catLabel;
+  document.getElementById('kpi-hot').textContent = hot?.name?.split(' ')[0]||'—';
+}
+
+function showDetail(d, tr) {
+  if (selRow) selRow.classList.remove('selected');
+  tr.classList.add('selected');
+  selRow = tr; selData = d;
+
+  const srcHtml = (d.sources||[]).map(s =>
+    `<a class="dp-source-url" href="${s.url}" target="_blank">↗ ${s.label}</a>`
+  ).join('');
+
+  document.getElementById('detail-panel').innerHTML = `
+    <div class="dp-title">${d.name}</div>
+    <div class="dp-sub">${d.sub}</div>
+    <div class="dp-section">
+      <span class="dp-label">Vacancy Breakdown</span>
+      <div class="dp-row"><span>Software Engineering</span><span class="val">${d.swe??'—'}</span></div>
+      <div class="dp-row"><span>Data / AI / ML</span><span class="val">${d.data_ai??'—'}</span></div>
+      <div class="dp-row"><span>Cloud / Infra / DevOps</span><span class="val">${d.cloud??'—'}</span></div>
+      <div class="dp-row"><span>Security</span><span class="val">${d.security??'—'}</span></div>
+      <div class="dp-row"><span>Product / Design</span><span class="val">${d.product??'—'}</span></div>
+      <div class="dp-row"><span>Other Tech</span><span class="val">${d.other??'—'}</span></div>
+      <div class="dp-row dp-total"><span><b>Total Tech Vacancies</b></span><span class="val">${d.total??'—'}</span></div>
+    </div>
+    ${d.note?`<div class="dp-section"><span class="dp-label">Analyst Note</span><div class="dp-note">${d.note}</div></div>`:''}
+    ${srcHtml?`<div class="dp-source"><span class="dp-source-label">Sources (click to open)</span>${srcHtml}</div>`:''}
+  `;
+}
+
+function sortBy(col) {
+  if (sortCol===col) sortAsc=!sortAsc; else{sortCol=col;sortAsc=col===0;}
+  document.querySelectorAll('thead th').forEach((th,i)=>{
+    th.classList.toggle('sorted',i===col);
+    const base=th.textContent.replace(/[ ↑↓]/g,'');
+    th.textContent=i===col?base+(sortAsc?' ↑':' ↓'):base;
+  });
+  render();
+}
+
+// ── Live Refresh via Claude API with web_search ───────────────────────────────
+async function runDigest() {
+  const btn=document.getElementById('btn-refresh');
+  const ri=document.getElementById('ri');
+  btn.disabled=true; ri.className='spin'; ri.textContent='⟳';
+  const sdot=document.getElementById('sdot');
+  sdot.className='sdot s-run';
+  document.getElementById('stext').textContent='Calling Claude API with web search enabled…';
+  document.getElementById('stream-output').textContent='';
+
+  const today=new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+
+  const prompt=`Today is ${today}, Bangkok Thailand.
+
+Use your web_search tool to find current open tech vacancies at these 12 Thai tech companies RIGHT NOW:
+KBTG (kbtg.tech/en/career), Tri Petch IT Solutions, SCB TechX (scbtechx.io/careers-home), PTT Digital Solutions (pttdigital.com), True/True Digital Group, AIS, Toyota Thailand, Agoda Bangkok (careersatagoda.com), LINE MAN Wongnai (careers.lmwn.com), Ascend Group/TrueMoney (ascendcorp.com), Bitkub (careers.bitkub.com), Krungsri Nimble.
+
+Search each company's careers page and/or jobsdb/glassdoor. Count only tech roles: Software Engineering, Data/AI/ML, Cloud/Infra/DevOps, Security, Product/Design.
+
+Respond ONLY with a JSON array. No prose, no markdown fences. Each element:
+{"id":"kbtg","name":"KBTG","total":22,"swe":10,"data_ai":4,"cloud":4,"security":2,"product":2,"other":0,"trend":"up","note":"one sentence","sources":[{"label":"short label","url":"https://..."}]}
+trend: "up"|"down"|"stable"|"new". Use exact numbers not ranges.`;
+
+  try {
+    const resp = await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:"claude-sonnet-4-6",
+        max_tokens:2000,
+        stream:true,
+        tools:[{"type":"web_search_20250305","name":"web_search"}],
+        messages:[{role:"user",content:prompt}]
+      })
+    });
+
+    if (!resp.ok) throw new Error(`API ${resp.status}`);
+
+    const reader=resp.body.getReader();
+    const dec=new TextDecoder();
+    let buf='', fullText='';
+    const out=document.getElementById('stream-output');
+
+    while(true){
+      const{done,value}=await reader.read();
+      if(done)break;
+      buf+=dec.decode(value,{stream:true});
+      const lines=buf.split('\n'); buf=lines.pop();
+      for(const line of lines){
+        if(!line.startsWith('data: '))continue;
+        const raw=line.slice(6).trim();
+        if(raw==='[DONE]')continue;
+        try{
+          const ev=JSON.parse(raw);
+          if(ev.type==='content_block_delta'&&ev.delta?.text){
+            fullText+=ev.delta.text;
+            // colorise stream
+            const colored=ev.delta.text
+              .replace(/"name":\s*"([^"]+)"/g,(m,n)=>`"name": "<span class=s-co>${n}</span>"`)
+              .replace(/:\s*(\d+)/g,(m,n)=>`: <span class=s-num>${n}</span>`);
+            out.innerHTML+=colored;
+            out.scrollTop=out.scrollHeight;
+          }
+          if(ev.type==='content_block_start'&&ev.content_block?.type==='tool_use'){
+            out.innerHTML+=`\n<span style="color:var(--muted)">🔍 Searching: ${ev.content_block.name}…</span>\n`;
+          }
+        }catch{}
+      }
+    }
+
+    const clean=fullText.replace(/```json|```/g,'').trim();
+    const s=clean.indexOf('['),e=clean.lastIndexOf(']');
+    if(s<0||e<0)throw new Error('No JSON array in response');
+    const fresh=JSON.parse(clean.slice(s,e+1));
+    DATA=fresh; selData=null; selRow=null;
+    render();
+    const now=new Date().toLocaleString('en-GB',{timeZone:'Asia/Bangkok',hour:'2-digit',minute:'2-digit'});
+    document.getElementById('last-updated').textContent=`Updated ${now} BKK`;
+    document.getElementById('kpi-ts').textContent=new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+    sdot.className='sdot s-ok';
+    document.getElementById('stext').textContent=`✓ Fresh data loaded for ${fresh.length} companies via Claude + web search.`;
+    document.getElementById('detail-panel').innerHTML='<div class="dp-empty">← Click a row<br>to see breakdown<br>& source links</div>';
+  } catch(err){
+    sdot.className='sdot s-err';
+    document.getElementById('stext').textContent='✗ '+err.message;
+    document.getElementById('stream-output').innerHTML+=`\n<span class=s-err>[ERROR] ${err.message}</span>`;
+  } finally {
+    btn.disabled=false; ri.className=''; ri.textContent='⟳';
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
